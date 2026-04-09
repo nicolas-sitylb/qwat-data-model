@@ -7,3 +7,4 @@ update/test_migration.expected.sql
 .idea
 .env
 logfile
+pg_service.conf
