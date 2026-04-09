@@ -1,18 +1,33 @@
 
 services:
   db:
+    hostname: qwat_db
+    container_name: qwat_db
+    shm_size: 256mb
     build:
       context: .
       dockerfile: datamodel/.docker/Dockerfile
       args:
         POSTGIS_IMAGE: ${POSTGIS_IMAGE:-postgis/postgis:16-3.5}
     image: qwat/qwat-data-model:${DOCKER_TAG:-unstable}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qwat}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "--auth-local=scram-sha-256 --auth-host=scram-sha-256"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-U", "postgres" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     working_dir: /src
+    restart: unless-stopped
+    ports:
+      - ${PG_HOST_PORT:-5432}:${QWAT_PG_PORT:-5432}
     volumes:
       - .:/src
-    ports:
-      # making the postgres database accessible for debugging
-      - ${QWAT_PG_PORT:-5432}:${QWAT_PG_PORT:-5432}
+      - ./datamodel/conf/pg_service.conf:/etc/postgresql-common/pg_service.conf
 
   qgis:
     build:
@@ -21,6 +36,9 @@ services:
       args:
         QGIS_TEST_VERSION: ${QGIS_TEST_VERSION:-latest}
     tty: true
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - .:/usr/src
     links:
@@ -34,7 +52,8 @@ services:
       - ./datamodel/schemaspy:/output
       - ./datamodel/schemaspy.properties:/schemaspy.properties
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     network_mode: "service:db"
     command: [
       "-configFile",
@@ -43,3 +62,6 @@ services:
     user: "${UID}:${GID}"
     profiles:
       - schemaspy
+
+volumes:
+  pgdata:
