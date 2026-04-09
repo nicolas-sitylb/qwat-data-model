@@ -1,0 +1,13 @@
+[postgres]
+  dbname=postgres
+  user=postgres
+
+[pg_qwat]
+  dbname=qwat
+  user=postgres
+
+[pg_qwat_demo]
+  dbname=qwat_demo
+  user=postgres
+
+
