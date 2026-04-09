@@ -105,6 +105,8 @@ if [[ -z "$PGSERVICE" ]]; then
     echo "No PG service given."
     usage
     exit 0
+else
+    echo "A PG service \"${PGSERVICE}\" was found"
 fi
 
 
