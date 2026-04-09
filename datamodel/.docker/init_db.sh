@@ -48,7 +48,7 @@ if [ "$#" == "0" ] || [ "$1" == "build" ]; then
 
   /src/datamodel/scripts/setup.sh ${@:2}
 
-  echo "Done ! Database ${PGSERVICE} can now be used."
+  echo "Done! Database ${PGSERVICE} can now be used."
   echo '----------------------------------------'
 
 fi
